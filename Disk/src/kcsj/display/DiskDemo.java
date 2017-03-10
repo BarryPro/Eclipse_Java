@@ -21,6 +21,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 
+import org.apache.log4j.Logger;
+
 /**
  * Created by belong on 2017/2/25.
  */
@@ -28,6 +30,12 @@ import javax.swing.JToolBar;
 import kcsj.action.ToolBarAction;
 import kcsj.pojo.Message;
 
+/**
+ * 磁盘界面显示类
+ * 功能：用于界面的显示
+ * @author belong
+ *
+ */
 public class DiskDemo extends JFrame{
     private static final int WIDTH=1200;
     private static final int HEIGHT=600;
@@ -41,29 +49,37 @@ public class DiskDemo extends JFrame{
     private JMenu menu1,menu2 ;
     private JMenuItem item1,item2;
     private JMenuBar bar;
+    private static Logger logger = Logger.getLogger(DiskDemo.class);
     
-    public DiskDemo(){
+    public DiskDemo(){    	
         super("Demo disk assignment");
+        logger.info("磁盘管理系统开始运行……");
         demoBlocks = new JButton[Disk.diskRodes][Disk.diskColumns];
         disk = new Disk(this);
+        logger.info("开始设置布局");
         setFrame();  // 设置窗口的显示
+        logger.info("布局设置结束");
+        logger.info("开始初始化数据");
         initData();  // 初始化数据
+        logger.info("初始化数据结束");
     }
     
     public static void main(String[] args){
+    	logger.info("主程序开始");    	
         new DiskDemo();
+        logger.info("主程序结束");
     }
 
     public void initData(){
         Message message = new Message("hu","folder",1,-1);
         disk.allocateSpace(message);
-        message = new Message("qiao","file",3,-1);
+        message = new Message("a","file",3,-1);
         disk.allocateSpace(message);
-        message = new Message("nan","file",3,0);
+        message = new Message("b","file",3,0);
         disk.allocateSpace(message);
-        message = new Message("li","folder",1,0);
+        message = new Message("c","folder",1,0);
         disk.allocateSpace(message);
-        message = new Message("jia","file",6,-1);
+        message = new Message("d","file",6,-1);
         disk.allocateSpace(message);
         changeDiskInfo();
     }
@@ -79,7 +95,7 @@ public class DiskDemo extends JFrame{
         	
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("退出");
+				logger.info("操作：退出");
 				System.exit(0);				
 			}
 		});
@@ -90,7 +106,7 @@ public class DiskDemo extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("关于");
+				logger.info("操作：关于");
 				JOptionPane jOptionPane = new JOptionPane();
 				jOptionPane.showMessageDialog(null,"第十组：磁盘空间管理\n由于成龙和张彬共同完成！");				
 			}
@@ -106,7 +122,8 @@ public class DiskDemo extends JFrame{
         ToolBarAction file_del = new ToolBarAction("删除",null,this);
         ToolBarAction file_add = new ToolBarAction("追加内容",null,this);
         ToolBarAction file_dec = new ToolBarAction("删除内容",null,this);
-        ToolBarAction file_sea = new ToolBarAction("文件使用情况",null,this);
+        ToolBarAction file_sea = new ToolBarAction("文件信息",null,this);
+        ToolBarAction file_map = new ToolBarAction("映射", null, this);
         // 把第一个按钮加入工具条
         toolBar.setFloatable(false);  // 设置工具条可移动
         JButton jb;
@@ -115,25 +132,30 @@ public class DiskDemo extends JFrame{
         jb.setToolTipText("新建");
         jb.setFocusPainted(false);
         toolBar.addSeparator(); // 增加一个隔离栏
-        // 把第删除按钮加入工具条
+        // 把删除按钮加入工具条
         jb = toolBar.add(file_del);
         jb.setActionCommand("DELETE");// 设置其产生事件所显示的命令
         jb.setToolTipText("删除");
         jb.setFocusPainted(false);
         toolBar.addSeparator();
-        jb = toolBar.add(file_add);// 把第增加按钮加入工具条
+        jb = toolBar.add(file_add);// 把增加按钮加入工具条
         jb.setActionCommand("ADD");// 设置其产生事件所显示的命令
         jb.setToolTipText("追加");
         jb.setFocusPainted(false);
         toolBar.addSeparator();
-        jb = toolBar.add(file_dec);// 把第减少按钮加入工具条
+        jb = toolBar.add(file_dec);// 把减少按钮加入工具条
         jb.setActionCommand("DEC");// 设置其产生事件所显示的命令
         jb.setToolTipText("减少");
         jb.setFocusPainted(false);
         toolBar.addSeparator();
-        jb = toolBar.add(file_sea);// 把第重命名按钮加入工具条
+        jb = toolBar.add(file_sea);// 
+        jb.setActionCommand("INFO");// 设置其产生事件所显示的命令
+        jb.setToolTipText("文件信息");
+        jb.setFocusPainted(false);
+        toolBar.addSeparator();
+        jb = toolBar.add(file_map);//
         jb.setActionCommand("MAP");// 设置其产生事件所显示的命令
-        jb.setToolTipText("显示使用情况");
+        jb.setToolTipText("映射");
         jb.setFocusPainted(false);
         toolBar.addSeparator();
         this.add(toolBar,BorderLayout.NORTH); // 设置其布局，放在最上面

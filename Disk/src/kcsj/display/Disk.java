@@ -7,18 +7,22 @@ package kcsj.display;
 import kcsj.pojo.Block;
 import kcsj.pojo.Message;
 import kcsj.pojo.MyColor;
-import kcsj.pojo.MyMap;
+import kcsj.pojo.NullTable;
 
 import javax.swing.*;
+
+import org.apache.log4j.Logger;
+
 import java.awt.*;
 import java.util.HashMap;
 
 /**
  * 模拟磁盘的空间的盘块类
+ * 管理整个磁盘的类
  * @author belong * 
  */
 public class Disk {
-    public static HashMap<String,MyMap>map=new HashMap<>();
+    public static HashMap<String,NullTable>map=new HashMap<>();
     public static int diskRodes = 10;  // 行数
     public static int diskColumns = 6;  // 列数
     public static int totalBlocks = diskRodes * diskColumns;  // 物理盘块的总个数
@@ -29,6 +33,8 @@ public class Disk {
     private MyColor myColor = new MyColor();  // 用于表示同一个文件
     private  JButton[][] demoBlocks ;  // 按钮表示磁盘块
     JButton button_temp ;  // 临时盘块
+    private static Logger logger = Logger.getLogger(Disk.class);
+    
     
     public Disk(){
 
@@ -40,37 +46,36 @@ public class Disk {
     }
 
     /**
+     * 回收空闲盘块
      * 获取空间盘块的行列值,同时把空闲盘块拿出来     *
      * @return 长度为2*size的数组，没两个相邻值为一个节点地址
      */
     public int[] getFreeBlocks(int[][] num){
-        int [] free = new int[num[0][0]*2];
+        int [] free = new int[num[0][0]*2];  // 按文件所需的两倍进行分配磁盘快
         int size=num[0][0];
         int count=0;
-        System.out.println("p");
-        System.out.println(num[0][0]);
-        System.out.println(num[0][1]);
-        System.out.println(num[0][2]);
-        System.out.println("p");
-        int locate=num[0][1];
+        logger.info("开始分配磁盘块");
+        logger.info("所需盘块的个数："+num[0][0]+" 初始盘块的横坐标："+num[0][1]+" 初始盘块的纵坐标："+num[0][2]);
+        logger.info("分配结束");
+        int locate=num[0][1];  // 初始盘块的横坐标
 
-        for(int i=num[0][1];i<Disk.diskRodes;i++){
+        for(int i=num[0][1];i<Disk.diskRodes;i++){  // 从初始盘块的位置进行扫描
             if(i==locate+1){
                 num[0][2]=0;
             }
             for(int j=num[0][2];j<Disk.diskColumns;j++){
-
-
-                if(count==size*2)break;
+                if(count==size*2){
+                	break;
+                }
                 if(diskFreeMap[i][j]==false){
-                    diskFreeMap[i][j]=true;
+                    diskFreeMap[i][j]=true;  // 正式分配盘块
                     free[count++] = i;
                     free[count++] = j;
                 }
-
-
             }
-            if(count==size*2)break;
+            if(count==size*2){
+            	break;
+            }
         }
         return free;
     }
@@ -114,14 +119,13 @@ public class Disk {
 //					System.out.print(tB.getNumber()+"|"+tB.getFileName()+"|"+tB.getNextBlock()+"|"+tB.getParentBlock()+"\t");
                 }
             }
-//			System.out.println();
         }
         System.out.println("空闲盘块："+Disk.freeB);
         for(int i=0;i<diskRodes;i++){
             for(int j=0;j<diskColumns;j++){
                 Block block = blockTable[i][j];
                 if(block!=null){
-                    if(block.getFileType().equals("folder")){
+                    if(block.getFileType().equals("folder")){ // 判断是否是文件夹
                         int t[] = block.getSubFile();
                         System.out.print("folder"+block.getFileName()+" ");
                         for(int k=0;k<10;k++){
@@ -140,13 +144,14 @@ public class Disk {
     
     /**
      * 采用的是位示图的方式来查找磁盘中的空闲盘块
+     * 回收空闲块
      * @param size
      * @return
      */
     public int[][] getFree(int size){
     	/**
     	 * 定义计数器，计数器有三个空间
-    	 * count[0][0]：用于计数
+    	 * count[0][0]: 用于计数
     	 * count[0][1]: 用于记录在位示图中横坐标的位置
     	 * count[0][2]: 用于记录在位示图中纵坐标的位置
     	 */
@@ -181,7 +186,7 @@ public class Disk {
                             count[0][0]=0;
                         }
                     }else{
-                        if((diskFreeMap[i][j]==false&&diskFreeMap[i][j-1]==false)){
+                        if((diskFreeMap[i][j]==false&&diskFreeMap[i][j-1]==false)){  // ***?
                             if(count[0][0]==0){
                                 count[0][1]=i;
                                 count[0][2]=j;
@@ -194,33 +199,31 @@ public class Disk {
                             count[0][0]=0;
                         }
                     }
-
                 }
-
-
-
             }
-
         }
         return count;
     }
 
     /**
+     * 连续分配
      * 给一个文件/文件夹分配存储空间，以及修改信息，并返回相应的消息对象
      * @param message size,fileName,fileType,pFileNumber
      * @return  success:startAdd,endAdd fail:
      */
     public Message allocateSpace(Message message){
-        Color c_temp = myColor.getColor();
+    	// 获取窗口表单的信息-------------------------------------------------------------
+        Color c_temp = myColor.getColor();  // 得到文件的类型
         int size = message.getSize();
         String fileType = message.getFileType();
-        String fileName = message.getFileName();
+        String fileName = message.getFileName();        
+        //---------------------------------------------------------------------------
         int parentFileNumber = message.getParentFileNumber();
         int startAdd = 0,endAdd = 0;
         int freeIndex = 0;
         int preR=0,preC=0,preNumber=0;
-        int[][] free=getFree(size);
-        if(size<=free[0][0]){
+        int[][] free=getFree(size);  // 得到空闲磁盘块的数量,这里是实现四种算法的入口
+        if(size<=free[0][0]){  // 相当于count[0][0],表示的是可用的空闲块儿的个数
             if(fileType.equals("file")){ //是文件
                 if(parentFileNumber!=-1){ //文件 有父文件夹
                     int pSubFileItem = getFreeItem(parentFileNumber);
@@ -261,7 +264,7 @@ public class Disk {
                         message.setOpeSuccess(true);
                         message.setEndAdd(endAdd);
                         message.setStartAdd(startAdd);
-                        map.put(fileName,new MyMap(startAdd,size));
+                        map.put(fileName,new NullTable(startAdd,size));
                         return message;  //子文件分配成功
                     }else{  //文件，父文件夹无多余文件
                         message.setOpeSuccess(false);
@@ -301,7 +304,7 @@ public class Disk {
                     message.setOpeSuccess(true);
                     message.setEndAdd(endAdd);
                     message.setStartAdd(startAdd);
-                    map.put(fileName,new MyMap(startAdd,size));
+                    map.put(fileName,new NullTable(startAdd,size));
                     return message;  //子文件分配成功
                 }
             }else{ //是文件夹
@@ -327,7 +330,7 @@ public class Disk {
                         Disk.freeB--;
                         message.setOpeSuccess(true);
                         message.setStartAdd(startAdd);
-                        map.put(fileName,new MyMap(startAdd,1));
+                        map.put(fileName,new NullTable(startAdd,1));
                         return message;
                     }else{ //文件夹 父文件无多余项
                         message.setOpeSuccess(false);
@@ -344,14 +347,14 @@ public class Disk {
                     blockTable[row][column].setNextBlock(-1);
                     blockTable[row][column].initialSubFile();
                     button_temp = demoBlocks[row][column];
-                    button_temp.setText(number+","+fileType+","+fileName+","+parentFileNumber+";");
+                    button_temp.setText(number+","+fileType+","+fileName+","+parentFileNumber+"");  // 磁盘上文件的显示信息
                     button_temp.setBackground(c_temp);
                     button_temp.setFont(new Font("隶书",1,15));
                     button_temp.revalidate();
                     Disk.freeB--;
                     message.setOpeSuccess(true);
                     message.setStartAdd(startAdd);
-                    map.put(fileName,new MyMap(startAdd,1));
+                    map.put(fileName,new NullTable(startAdd,1));
                     return message;
                 }
             }
@@ -596,7 +599,6 @@ public class Disk {
         int order = size-decSpace;
         int row = 0, column = 0;
         int number = message.getStartAdd();
-//		System.out.println(size+" "+decSpace+" "+number);
         if(order>0){ //减少空间小于文件大小
             for(int i=0;i<order;i++){
                 row = getRowIndex(number);

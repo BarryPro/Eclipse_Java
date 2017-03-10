@@ -7,6 +7,8 @@ import java.io.Serializable;
 
 /**
  * 用于描述分配出去的磁盘块的具体信息
+ * 文件或文件夹的具体信息类
+ * (文件空间管理)
  * @author belong
  *
  */

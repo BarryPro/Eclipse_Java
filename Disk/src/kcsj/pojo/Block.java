@@ -1,7 +1,9 @@
 package kcsj.pojo;
 
 /**
- * Created by Administrator on 2017/2/25.
+ * 磁盘块的信息（磁盘空间管理）
+ * 用于描述磁盘块的具体信息的
+ * Created by belong on 2017/2/25.
  */
 public class Block {
     public static int totalSubFiles = 10;

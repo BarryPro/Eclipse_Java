@@ -9,9 +9,13 @@ import kcsj.display.DiskDemo;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-
+/**
+ * 工具栏定义类
+ * @author belong
+ *
+ */
 public 	class ToolBarAction extends AbstractAction {
-    DiskDemo frame;
+    private DiskDemo frame;
     public ToolBarAction(String name,Icon icon,DiskDemo frame){
         super(name,icon);
         this.frame = frame;
