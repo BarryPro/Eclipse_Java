@@ -1,6 +1,8 @@
 package kcsj.pojo;
 
-import com.sun.xml.internal.messaging.saaj.packaging.mime.Header;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 名称：空闲链表法
@@ -9,9 +11,13 @@ import com.sun.xml.internal.messaging.saaj.packaging.mime.Header;
  *
  */
 public class NullLinkTable {
+	public Map<String,ArrayList<Integer>> map = new HashMap<String, ArrayList<Integer>>();
+	public Block block; //盘块信息
+	public Block next; //下一个盘块
+	
 	public class Node{
-		private Block value; // 用于存储磁盘块的信息
-		private Node next; // 指向下一个盘块
+		public Block value; // 用于存储磁盘块的信息
+		public Node next; // 指向下一个盘块
 		
 		Node(Block value,Node next){
 			this.value = value;

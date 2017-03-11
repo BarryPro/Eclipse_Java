@@ -66,7 +66,11 @@ public class DiskDemo extends JFrame{
     
     public static void main(String[] args){
     	logger.info("主程序开始");    	
-        new DiskDemo();
+        try {
+        	new DiskDemo();
+		} catch (Exception e) {
+			logger.info("程序好像有点蒙圈了路  %>_<% ");
+		}
         logger.info("主程序结束");
     }
 
@@ -122,7 +126,6 @@ public class DiskDemo extends JFrame{
         ToolBarAction file_del = new ToolBarAction("删除",null,this);
         ToolBarAction file_add = new ToolBarAction("追加内容",null,this);
         ToolBarAction file_dec = new ToolBarAction("删除内容",null,this);
-        ToolBarAction file_sea = new ToolBarAction("文件信息",null,this);
         ToolBarAction file_map = new ToolBarAction("映射", null, this);
         // 把第一个按钮加入工具条
         toolBar.setFloatable(false);  // 设置工具条可移动
@@ -146,11 +149,6 @@ public class DiskDemo extends JFrame{
         jb = toolBar.add(file_dec);// 把减少按钮加入工具条
         jb.setActionCommand("DEC");// 设置其产生事件所显示的命令
         jb.setToolTipText("减少");
-        jb.setFocusPainted(false);
-        toolBar.addSeparator();
-        jb = toolBar.add(file_sea);// 
-        jb.setActionCommand("INFO");// 设置其产生事件所显示的命令
-        jb.setToolTipText("文件信息");
         jb.setFocusPainted(false);
         toolBar.addSeparator();
         jb = toolBar.add(file_map);//
